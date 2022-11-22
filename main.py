@@ -8,6 +8,8 @@ from botocore.exceptions import ClientError
 
 import pyspark
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from pyspark.sql.types import TimestampType
 
 APP_NAME = "kaporos_311_requests_analysis"
 APP_TOKEN = "TJzJnHzT1F5ke8o6AxflJwvMG"
@@ -18,28 +20,33 @@ S3_BUCKET_NAME = "311-dataset"
 def extract_311_requests_to_s3():
     responses_311 = requests.get(DATASET_URL, {
         "$$app_token": APP_TOKEN,
-        "$limit" : 10,
-        "borough": "BROOKLYN"
+        "complaint_type": "Animal Abuse",
+        "borough": "BROOKLYN",
+        "$limit": 50000
     })
 
-    logging.info("Finished getting data from 311")
+    complaints_311_in_json = responses_311.json()
+
+    logging.info(f"Finished extracting data from 311. [requests_count={len(complaints_311_in_json)}]")
 
     with open(S3_FILE_NAME, 'w') as writer:
-        writer.write(json.dumps(responses_311.json()))
+        writer.write(json.dumps(complaints_311_in_json))
 
     s3_client = boto3.client("s3")
     try:
         response = s3_client.upload_file(S3_FILE_NAME, S3_BUCKET_NAME, S3_FILE_NAME)
     except ClientError as e:
-        logging.error(e)
+        logging.error(f"Failed to upload file to s3. [error={e}]")
 
 def transform_311_requests():
     spark = SparkSession.builder.appName(APP_NAME).getOrCreate()
     spark.sparkContext.setLogLevel("WARN")
 
-    s3_uri = f's3a://{S3_BUCKET_NAME}/{S3_FILE_NAME}'
+    s3_uri = f"s3a://{S3_BUCKET_NAME}/{S3_FILE_NAME}"
     requests_311 = spark.read.json(s3_uri)
     requests_311.printSchema()
+    requests_311.createOrReplaceTempView("complaints")
+    spark.sql("SELECT year(created_date), COUNT(*) FROM complaints GROUP BY year(created_date)").show()
     
     spark.stop()
 
