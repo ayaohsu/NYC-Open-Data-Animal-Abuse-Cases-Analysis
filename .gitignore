@@ -1,0 +1,5 @@
+*.json
+*.ppk
+venv
+questions.txt
+staged_data_schema.txt
