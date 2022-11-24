@@ -18,11 +18,16 @@ S3_FILE_NAME = "311_response.json"
 S3_BUCKET_NAME = "311-dataset"
 
 def extract_311_requests_to_s3():
+    query_to_311_requests = """
+        date_extract_y(created_date) > 2012
+        and complaint_type in ('Animal Abuse', 'Animal-Abuse')
+        and borough = 'BROOKLYN'
+    """
+
     responses_311 = requests.get(DATASET_URL, {
         "$$app_token": APP_TOKEN,
-        "complaint_type": "Animal Abuse",
-        "borough": "BROOKLYN",
-        "$limit": 50000
+        "$limit": 100000,
+        "$where": query
     })
 
     complaints_311_in_json = responses_311.json()
@@ -32,11 +37,11 @@ def extract_311_requests_to_s3():
     with open(S3_FILE_NAME, 'w') as writer:
         writer.write(json.dumps(complaints_311_in_json))
 
-    s3_client = boto3.client("s3")
-    try:
-        response = s3_client.upload_file(S3_FILE_NAME, S3_BUCKET_NAME, S3_FILE_NAME)
-    except ClientError as e:
-        logging.error(f"Failed to upload file to s3. [error={e}]")
+    # s3_client = boto3.client("s3")
+    # try:
+    #     response = s3_client.upload_file(S3_FILE_NAME, S3_BUCKET_NAME, S3_FILE_NAME)
+    # except ClientError as e:
+    #     logging.error(f"Failed to upload file to s3. [error={e}]")
 
 def transform_311_requests():
     spark = SparkSession.builder.appName(APP_NAME).getOrCreate()
@@ -62,4 +67,4 @@ if __name__ == "__main__":
     root.addHandler(handler)
     
     extract_311_requests_to_s3()
-    transform_311_requests()
+    #transform_311_requests()
