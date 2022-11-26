@@ -1,0 +1,12 @@
+scripts:
+
+spark.sql("SELECT COUNT(*) FROM complaints WHERE created BETWEEN to_date('2022-09-28') AND to_date('2022-10-10')").show()
+
+val requests_with_created_date_in_date_format = requests_in_jewish_zip_codes.withColumn("created", to_date(col("created_date")))
+
+266
+
+spark.sql("SELECT COUNT(*) FROM complaints WHERE (created BETWEEN to_date('2022-01-01') AND to_date('2022-09-27')) OR (created BETWEEN to_date('2022-10-11') AND to_date('2022-12-31'))").show()
+
+173
+7.16 per 13 days vs 266
