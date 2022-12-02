@@ -7,7 +7,6 @@ import sys
 import boto3
 from botocore.exceptions import ClientError
 
-APP_NAME = "kaporos_311_requests_analysis"
 APP_TOKEN = "TJzJnHzT1F5ke8o6AxflJwvMG"
 DATASET_URL = "https://data.cityofnewyork.us/resource/erm2-nwe9"
 S3_FILE_NAME = "311_response.json"

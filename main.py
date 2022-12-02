@@ -1,8 +1,14 @@
 import logging
 import sys
 
+from pyspark.sql import SparkSession
+
 from extract_311_requests import extract_311_requests_to_s3
 from transform_requests import transform_311_requests
+from load_into_redshift import load_tables_into_redshift
+
+APP_NAME = "kaporos_311_requests_analysis"
+REDSHIFT_JAR_PATH = "redshift-jdbc42-2.0.0.4.jar"
 
 if __name__ == "__main__":
     
@@ -15,5 +21,15 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     root.addHandler(handler)
     
-    extract_311_requests_to_s3()
-    transform_311_requests()
+    #extract_311_requests_to_s3()
+
+    spark = SparkSession.builder.appName(APP_NAME)\
+        .config("spark.jars", REDSHIFT_JAR_PATH)\
+        .config("spark.driver.extraClassPath", REDSHIFT_JAR_PATH)\
+        .getOrCreate()
+    spark.sparkContext.setLogLevel("WARN")
+
+    transform_311_requests(spark)
+    load_tables_into_redshift(spark)
+
+    spark.stop()
