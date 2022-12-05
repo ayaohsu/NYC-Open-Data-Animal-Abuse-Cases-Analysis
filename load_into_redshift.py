@@ -8,5 +8,4 @@ def load_tables_into_redshift(sparkSession):
         .option("user", "testuser1")\
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "dim_complaint_type")\
-        .option("driver", 'com.amazon.redshift.jdbc42.Driver')\
         .save()
