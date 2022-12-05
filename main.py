@@ -21,7 +21,7 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     root.addHandler(handler)
     
-    #extract_311_requests_to_s3()
+    extract_311_requests_to_s3()
 
     spark = SparkSession.builder.appName(APP_NAME)\
         .config("spark.jars", REDSHIFT_JAR_PATH)\
