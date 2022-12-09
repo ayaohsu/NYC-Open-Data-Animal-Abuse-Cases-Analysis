@@ -8,7 +8,6 @@ from transform_requests import transform_311_requests
 from load_into_redshift import load_tables_into_redshift
 
 APP_NAME = "kaporos_311_requests_analysis"
-REDSHIFT_JAR_PATH = "redshift-jdbc42-2.0.0.4.jar"
 
 if __name__ == "__main__":
     
@@ -23,10 +22,8 @@ if __name__ == "__main__":
     
     extract_311_requests_to_s3()
 
-    spark = SparkSession.builder.appName(APP_NAME)\
-        .config("spark.jars", REDSHIFT_JAR_PATH)\
-        .config("spark.driver.extraClassPath", REDSHIFT_JAR_PATH)\
-        .getOrCreate()
+    spark = SparkSession.builder.appName(APP_NAME).getOrCreate()
+    
     spark.sparkContext.setLogLevel("WARN")
 
     transform_311_requests(spark)
