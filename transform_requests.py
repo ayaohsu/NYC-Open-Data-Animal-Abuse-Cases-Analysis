@@ -26,12 +26,11 @@ def create_dim_complaint_type_table(sparkSession, requests):
 
 def create_dim_date_table(sparkSession, requests):
     created_dates = requests.select(to_date("created_date").alias("date")).filter("date is not null").distinct()
-    created_dates.show()
-    # closed_dates = requests.select(to_date("closed_date").alias("date")).filter("date is not null").distinct()
-    # closed_dates.show()
-    # all_dates = created_dates.union(closed_dates).distinct()
-    all_dates = created_dates
-    all_dates.show()
+    if "closed_date" in requests.columns:
+        closed_dates = requests.select(to_date("closed_date").alias("date")).filter("date is not null").distinct()
+        all_dates = created_dates.union(closed_dates).distinct()
+    else:
+        all_dates = created_dates
 
     dates_with_key = all_dates.withColumn("date_key", date_format(col("date"), "yyyyMMdd").cast(IntegerType()))
     dates_with_year_month_day = dates_with_key\
@@ -43,28 +42,46 @@ def create_dim_date_table(sparkSession, requests):
     dates_with_year_month_day.show()    
 
 def create_fact_service_requests_table(sparkSession, requests):
-    requests_with_desired_fields = requests\
-        .select(col("unique_key"),\
-            col("created_date").alias("created_date_time"),\
-            #col("closed_date").alias("closed_date_time"),\
-            col("complaint_type"),\
-            col("incident_zip"),\
-            col("address_type"),\
-            col("descriptor"),\
-            col("location.human_address").alias("human_address"),\
-            col("location.latitude").alias("latitude"),\
-            col("location.longitude").alias("longitude"),\
-            col("resolution_description"),\
-            col("cross_street_1"),\
-            col("cross_street_2"),\
-            col("intersection_street_1"),\
-            col("intersection_street_2")\
-        )
+    if "closed_date" in requests.columns:
+        requests_with_desired_fields = requests\
+            .select(col("unique_key"),\
+                col("created_date").alias("created_date_time"),\
+                col("closed_date").alias("closed_date_time"),\
+                col("complaint_type"),\
+                col("incident_zip"),\
+                col("address_type"),\
+                col("descriptor"),\
+                col("location.human_address").alias("human_address"),\
+                col("location.latitude").alias("latitude"),\
+                col("location.longitude").alias("longitude"),\
+                col("resolution_description"),\
+                col("cross_street_1"),\
+                col("cross_street_2"),\
+                col("intersection_street_1"),\
+                col("intersection_street_2")\
+            )
+    else:
+        requests_with_desired_fields = requests\
+            .select(col("unique_key"),\
+                col("created_date").alias("created_date_time"),\
+                col("complaint_type"),\
+                col("incident_zip"),\
+                col("address_type"),\
+                col("descriptor"),\
+                col("location.human_address").alias("human_address"),\
+                col("location.latitude").alias("latitude"),\
+                col("location.longitude").alias("longitude"),\
+                col("resolution_description"),\
+                col("cross_street_1"),\
+                col("cross_street_2"),\
+                col("intersection_street_1"),\
+                col("intersection_street_2")\
+            ).withColumn("closed_date_time", lit(None))
     
     requests_with_date_as_timestamps = requests_with_desired_fields\
         .withColumn("created_date", to_date(col("created_date_time")))\
-        #.withColumn("closed_date", to_date(col("closed_date_time")))\
-        #.drop("created_date_time", "closed_date_time")
+        .withColumn("closed_date", to_date(col("closed_date_time")))\
+        .drop("created_date_time", "closed_date_time")
     
     complaint_types = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")
     

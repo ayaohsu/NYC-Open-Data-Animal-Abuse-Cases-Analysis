@@ -8,7 +8,6 @@ def load_tables_into_redshift(sparkSession):
     complaint_type_df.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
         .option("url", url)\
-        .option("user", "testuser1")
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "dim_complaint_type")\
         .option("aws_iam_role", iam_role_arn) \
