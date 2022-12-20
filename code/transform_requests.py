@@ -38,8 +38,22 @@ def create_dim_date_table(sparkSession, requests):
         .withColumn("month", month(col("date")))\
         .withColumn("dayofyear", dayofyear(col("date")))
 
-    dates_with_year_month_day.createOrReplaceTempView("dim_date_type")
-    dates_with_year_month_day.show()    
+    dates_with_year_month_day.createOrReplaceTempView("dim_date")
+    dates_with_year_month_day.show()
+
+def create_location_type_table(sparkSession, requests):
+    location_types = requests.select(col("location_type").alias("location_type_name"))\
+        .distinct().orderBy("location_type")
+
+    location_types_with_partition = location_types.withColumn("partition", lit("ALL"))
+    one_partition = Window.partitionBy("partition").orderBy("partition")
+
+    location_types_with_row_numbers = location_types_with_partition\
+        .withColumn("location_type_key", row_number().over(one_partition))\
+        .drop("partition")
+    
+    location_types_with_row_numbers.createOrReplaceTempView("dim_location_type")
+    location_types_with_row_numbers.show()
 
 def create_fact_service_requests_table(sparkSession, requests):
     if "closed_date" in requests.columns:
@@ -49,7 +63,7 @@ def create_fact_service_requests_table(sparkSession, requests):
                 col("closed_date").alias("closed_date_time"),\
                 col("complaint_type"),\
                 col("incident_zip"),\
-                col("address_type"),\
+                col("location_type"),\
                 col("descriptor"),\
                 col("location.human_address").alias("human_address"),\
                 col("location.latitude").alias("latitude"),\
@@ -66,7 +80,7 @@ def create_fact_service_requests_table(sparkSession, requests):
                 col("created_date").alias("created_date_time"),\
                 col("complaint_type"),\
                 col("incident_zip"),\
-                col("address_type"),\
+                col("location_type"),\
                 col("descriptor"),\
                 col("location.human_address").alias("human_address"),\
                 col("location.latitude").alias("latitude"),\
@@ -89,11 +103,19 @@ def create_fact_service_requests_table(sparkSession, requests):
         .join(complaint_types, requests_with_date_as_timestamps["complaint_type"] == complaint_types["complaint_type_name"])\
         .select(requests_with_date_as_timestamps["*"], complaint_types["complaint_type_key"])\
         .drop("complaint_type")
+    
 
-    dates = sparkSession.sql("SELECT date_key, date FROM dim_date_type")
-    requests_with_date_key = requests_with_complaint_type_keys\
-        .join(dates, requests_with_complaint_type_keys["created_date"] == dates["date"])\
-        .select(requests_with_complaint_type_keys["*"], dates["date_key"].alias("created_date_key"))\
+    location_types = sparkSession.sql("SELECT location_type_key, location_type_name FROM dim_location_type")
+    
+    requests_with_location_type_keys = requests_with_complaint_type_keys\
+        .join(location_types, requests_with_complaint_type_keys["location_type"] == location_types["location_type_name"])\
+        .select(requests_with_complaint_type_keys["*"], location_types["location_type_key"])\
+        .drop("location_type")
+
+    dates = sparkSession.sql("SELECT date_key, date FROM dim_date")
+    requests_with_date_key = requests_with_location_type_keys\
+        .join(dates, requests_with_location_type_keys["created_date"] == dates["date"])\
+        .select(requests_with_location_type_keys["*"], dates["date_key"].alias("created_date_key"))\
         .drop("created_date")
     
     requests_with_date_key.createOrReplaceTempView("fact_service_requests")
@@ -105,6 +127,7 @@ def transform_311_requests(sparkSession):
 
     create_dim_complaint_type_table(sparkSession, requests_311)
     create_dim_date_table(sparkSession, requests_311)
+    create_location_type_table(sparkSession, requests_311)
     create_fact_service_requests_table(sparkSession, requests_311)
 
     logging.info(f"Finished transforming data.")
