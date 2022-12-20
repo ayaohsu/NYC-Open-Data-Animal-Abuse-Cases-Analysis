@@ -15,18 +15,14 @@ S3_BUCKET_NAME = "311-dataset"
 def extract_311_requests_to_s3():
 
     query_to_311_requests = """
-        borough = 'BROOKLYN'
+        date_extract_y(created_date) >= 2015
+        and complaint_type in ('Animal Abuse', 'Animal-Abuse')
+        and borough = 'BROOKLYN'
     """
-
-    # query_to_311_requests = """
-    #     date_extract_y(created_date) >= 2015
-    #     and complaint_type in ('Animal Abuse', 'Animal-Abuse')
-    #     and borough = 'BROOKLYN'
-    # """
 
     responses_311 = requests.get(DATASET_URL, {
         "$$app_token": APP_TOKEN,
-        "$limit":  10, #1000000,
+        "$limit":  1000000,
         "$where": query_to_311_requests
     })
 

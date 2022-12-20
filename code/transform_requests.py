@@ -55,7 +55,7 @@ def create_location_type_table(sparkSession, requests):
     location_types_with_row_numbers.createOrReplaceTempView("dim_location_type")
     location_types_with_row_numbers.show()
 
-def create_fact_service_requests_table(sparkSession, requests):
+def create_fact_service_request_table(sparkSession, requests):
     if "closed_date" in requests.columns:
         requests_with_desired_fields = requests\
             .select(col("unique_key"),\
@@ -113,13 +113,18 @@ def create_fact_service_requests_table(sparkSession, requests):
         .drop("location_type")
 
     dates = sparkSession.sql("SELECT date_key, date FROM dim_date")
-    requests_with_date_key = requests_with_location_type_keys\
+    requests_with_created_date_key = requests_with_location_type_keys\
         .join(dates, requests_with_location_type_keys["created_date"] == dates["date"])\
         .select(requests_with_location_type_keys["*"], dates["date_key"].alias("created_date_key"))\
         .drop("created_date")
     
-    requests_with_date_key.createOrReplaceTempView("fact_service_requests")
-    requests_with_date_key.show()
+    requests_with_closed_date_key = requests_with_created_date_key\
+        .join(dates, requests_with_created_date_key["closed_date"] == dates["date"], "left")\
+        .select(requests_with_created_date_key["*"], dates["date_key"].alias("closed_date_key"))\
+        .drop("closed_date")
+    
+    requests_with_closed_date_key.createOrReplaceTempView("fact_service_request")
+    requests_with_closed_date_key.show()
 
 def transform_311_requests(sparkSession):
     s3_uri = f"s3://{S3_BUCKET_NAME}/{S3_FILE_NAME}"
@@ -128,7 +133,7 @@ def transform_311_requests(sparkSession):
     create_dim_complaint_type_table(sparkSession, requests_311)
     create_dim_date_table(sparkSession, requests_311)
     create_location_type_table(sparkSession, requests_311)
-    create_fact_service_requests_table(sparkSession, requests_311)
+    create_fact_service_request_table(sparkSession, requests_311)
 
     logging.info(f"Finished transforming data.")
 
