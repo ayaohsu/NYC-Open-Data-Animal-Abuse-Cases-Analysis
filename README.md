@@ -18,3 +18,9 @@ Draw a map with this year's data
 1. Soda API -> s3
 2. s3 -> oracle db with spark
 3. Run queries on Oracle DB and export to excel 
+
+# Usage
+
+spark-submit \
+  --jars /usr/share/aws/redshift/jdbc/RedshiftJDBC.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-redshift.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-avro.jar,/usr/share/aws/redshift/spark-redshift/lib/minimal-json.jar \
+  code/main.py

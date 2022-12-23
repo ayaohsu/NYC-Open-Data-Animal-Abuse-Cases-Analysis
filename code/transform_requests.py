@@ -3,12 +3,15 @@ import sys
 
 from pyspark.sql import SparkSession
 
-from pyspark.sql.functions import col, row_number, lit, to_date, date_format, year, month, dayofyear
+from pyspark.sql.functions import col, row_number, lit, to_date, date_format,\
+     year, month, dayofyear, substring
 from pyspark.sql.window import Window
 from pyspark.sql.types import IntegerType
 
 S3_FILE_NAME = "311_response.json"
 S3_BUCKET_NAME = "311-dataset"
+
+MAX_SIZE_STRING_COLUMN_REDSHIFT = 256
 
 def create_dim_complaint_type_table(sparkSession, requests):
     complaint_types = requests.select(col("complaint_type").alias("complaint_type_name"))\
@@ -22,7 +25,6 @@ def create_dim_complaint_type_table(sparkSession, requests):
         .drop("partition")
     
     complaint_types_with_row_numbers.createOrReplaceTempView("dim_complaint_type")
-    complaint_types_with_row_numbers.show()
 
 def create_dim_date_table(sparkSession, requests):
     created_dates = requests.select(to_date("created_date").alias("date")).filter("date is not null").distinct()
@@ -39,7 +41,6 @@ def create_dim_date_table(sparkSession, requests):
         .withColumn("dayofyear", dayofyear(col("date")))
 
     dates_with_year_month_day.createOrReplaceTempView("dim_date")
-    dates_with_year_month_day.show()
 
 def create_location_type_table(sparkSession, requests):
     location_types = requests.select(col("location_type").alias("location_type_name"))\
@@ -53,7 +54,6 @@ def create_location_type_table(sparkSession, requests):
         .drop("partition")
     
     location_types_with_row_numbers.createOrReplaceTempView("dim_location_type")
-    location_types_with_row_numbers.show()
 
 def create_fact_service_request_table(sparkSession, requests):
     if "closed_date" in requests.columns:
@@ -63,9 +63,9 @@ def create_fact_service_request_table(sparkSession, requests):
                 col("closed_date").alias("closed_date_time"),\
                 col("complaint_type"),\
                 col("incident_zip"),\
+                col("incident_address"),\
                 col("location_type"),\
                 col("descriptor"),\
-                col("location.human_address").alias("human_address"),\
                 col("location.latitude").alias("latitude"),\
                 col("location.longitude").alias("longitude"),\
                 col("resolution_description"),\
@@ -80,9 +80,9 @@ def create_fact_service_request_table(sparkSession, requests):
                 col("created_date").alias("created_date_time"),\
                 col("complaint_type"),\
                 col("incident_zip"),\
+                col("incident_address"),\
                 col("location_type"),\
                 col("descriptor"),\
-                col("location.human_address").alias("human_address"),\
                 col("location.latitude").alias("latitude"),\
                 col("location.longitude").alias("longitude"),\
                 col("resolution_description"),\
@@ -123,8 +123,12 @@ def create_fact_service_request_table(sparkSession, requests):
         .select(requests_with_created_date_key["*"], dates["date_key"].alias("closed_date_key"))\
         .drop("closed_date")
     
-    requests_with_closed_date_key.createOrReplaceTempView("fact_service_request")
-    requests_with_closed_date_key.show()
+    requests_with_separate_resolution_description_columns = requests_with_closed_date_key\
+        .withColumn("resolution_description_1", substring("resolution_description", 1, MAX_SIZE_STRING_COLUMN_REDSHIFT))\
+        .withColumn("resolution_description_2", substring("resolution_description", MAX_SIZE_STRING_COLUMN_REDSHIFT+1, MAX_SIZE_STRING_COLUMN_REDSHIFT))\
+        .drop("resolution_description")
+    
+    requests_with_separate_resolution_description_columns.createOrReplaceTempView("fact_service_request")
 
 def transform_311_requests(sparkSession):
     s3_uri = f"s3://{S3_BUCKET_NAME}/{S3_FILE_NAME}"
