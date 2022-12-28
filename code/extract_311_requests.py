@@ -12,11 +12,26 @@ DATASET_URL = "https://data.cityofnewyork.us/resource/erm2-nwe9"
 S3_FILE_NAME = "311_response.json"
 S3_BUCKET_NAME = "311-dataset"
 
+INTERESTED_COMPLAINT_TYPES = [
+    "Animal Abuse",
+    "Animal-Abuse",
+    "Unsanitary Animal Pvt Property",
+    "Dead Animal",
+    "Unsanitary Animal Facility",
+    "Animal Facility - No Permit",
+    "Blocked Driveway",
+    "Dirty Conditions"
+]
+
 def extract_311_requests_to_s3():
 
+    # query_to_311_requests = """
+    #     date_extract_y(created_date) >= 2015
+    #     and complaint_type in ('Animal Abuse', 'Animal-Abuse')
+    #     and borough = 'BROOKLYN'
+    # """
+
     query_to_311_requests = """
-        date_extract_y(created_date) >= 2015
-        and complaint_type in ('Animal Abuse', 'Animal-Abuse')
         and borough = 'BROOKLYN'
     """
 

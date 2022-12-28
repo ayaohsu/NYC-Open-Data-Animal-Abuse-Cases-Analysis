@@ -68,6 +68,8 @@ def create_fact_service_request_table(sparkSession, requests):
                 col("descriptor"),\
                 col("location.latitude").alias("latitude"),\
                 col("location.longitude").alias("longitude"),\
+                col("x_coordinate_state_plane")\
+                col("y_coordinate_state_plane")\
                 col("resolution_description"),\
                 col("cross_street_1"),\
                 col("cross_street_2"),\
@@ -85,6 +87,8 @@ def create_fact_service_request_table(sparkSession, requests):
                 col("descriptor"),\
                 col("location.latitude").alias("latitude"),\
                 col("location.longitude").alias("longitude"),\
+                col("x_coordinate_state_plane")\
+                col("y_coordinate_state_plane")\
                 col("resolution_description"),\
                 col("cross_street_1"),\
                 col("cross_street_2"),\
