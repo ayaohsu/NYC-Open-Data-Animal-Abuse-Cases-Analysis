@@ -1,11 +1,12 @@
 import logging
 import sys
 import time
+import utm
 
 from pyspark.sql import SparkSession
 
 from pyspark.sql.functions import col, row_number, lit, to_date, date_format,\
-     year, month, dayofyear, substring, when
+     year, month, dayofyear, substring, when, split, udf
 from pyspark.sql.window import Window
 from pyspark.sql.types import IntegerType
 
@@ -29,10 +30,8 @@ def transform_requests_df(requests):
             col("incident_address"),\
             col("location_type"),\
             col("descriptor"),\
-            col("location.latitude").alias("latitude"),\
-            col("location.longitude").alias("longitude"),\
-            col("x_coordinate_state_plane"),\
-            col("y_coordinate_state_plane"),\
+            col("location.latitude").alias("latitude").cast("double"),\
+            col("location.longitude").alias("longitude").cast("double"),\
             col("resolution_description"),\
             col("cross_street_1"),\
             col("cross_street_2"),\
@@ -49,8 +48,21 @@ def transform_requests_df(requests):
         .withColumn("complaint_type_new", when(col("complaint_type") == "Animal-Abuse", "Animal Abuse").otherwise(col("complaint_type")))\
         .drop("complaint_type")\
         .withColumnRenamed("complaint_type_new", "complaint_type")
+
+    def convert_latlon_to_utm(latitude, longitude):
+        utm_easting, utm_northing, utm_zone, utm_lat_zone = utm.from_latlon(latitude, longitude)
+        return f'{utm_easting},{utm_northing},{utm_zone}'
     
-    return requests_with_normalized_animal_abuse_complaint_type
+    convert_latlon_to_utm_udf = udf(convert_latlon_to_utm)
+    
+    requests_with_utm_coordinates = requests_with_normalized_animal_abuse_complaint_type\
+        .withColumn("utm", convert_latlon_to_utm_udf(col("latitude"), col("longitude")))
+    
+    requests_with_utm_fields_as_separate_columns = requests_with_utm_coordinates\
+        .withColumn("utm_easting", split(col("utm"), ',').getItem(0))\
+        .withColumn("utm_northing", split(col("utm"), ',').getItem(1))\
+        .withColumn("utm_zone", split(col("utm"), ',').getItem(2))
+    return requests_with_utm_fields_as_separate_columns
 
 
 def create_dim_complaint_type_table(sparkSession, requests):
@@ -118,6 +130,8 @@ def create_fact_service_request_table(sparkSession, requests):
         .join(dates, requests_with_created_date_key["closed_date"] == dates["date"], "left")\
         .select(requests_with_created_date_key["*"], dates["date_key"].alias("closed_date_key"))\
         .drop("closed_date")
+
+    requests_with_closed_date_key.show()
     
     requests_with_closed_date_key.createOrReplaceTempView("fact_service_request")
 
@@ -128,6 +142,7 @@ def transform_311_requests(sparkSession):
     requests_311 = sparkSession.read.json(s3_uri)
 
     request = transform_requests_df(requests_311)
+    request.show()
 
     create_dim_complaint_type_table(sparkSession, request)
     create_dim_date_table(sparkSession, request)
