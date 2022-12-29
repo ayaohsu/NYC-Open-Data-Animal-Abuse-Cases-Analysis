@@ -1,6 +1,9 @@
 import logging
+import time
 
 def load_tables_into_redshift(sparkSession):
+    start_time = time.time()
+
     complaint_type_df = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")
     
     redshift_database_name = "requests"
@@ -51,6 +54,8 @@ def load_tables_into_redshift(sparkSession):
         descriptor,
         latitude,
         longitude,
+        x_coordinate_state_plane,
+        y_coordinate_state_plane,
         resolution_description_1,
         resolution_description_2,
         cross_street_1,
@@ -70,4 +75,7 @@ def load_tables_into_redshift(sparkSession):
         .mode("overwrite")\
         .save()
 
-    logging.info(f"Finished loading data.")
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+
+    logging.info(f"Finished loading data. [elapsed_time={elapsed_time}]")
