@@ -8,7 +8,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, row_number, lit, to_date, date_format,\
      year, month, dayofyear, substring, when, split, udf
 from pyspark.sql.window import Window
-from pyspark.sql.types import IntegerType
+from pyspark.sql.types import IntegerType, StringType
 
 S3_FILE_NAME = "311_response.json"
 S3_BUCKET_NAME = "311-dataset"
@@ -53,7 +53,7 @@ def transform_requests_df(requests):
         utm_easting, utm_northing, utm_zone, utm_lat_zone = utm.from_latlon(latitude, longitude)
         return f'{utm_easting},{utm_northing},{utm_zone}'
     
-    convert_latlon_to_utm_udf = udf(convert_latlon_to_utm)
+    convert_latlon_to_utm_udf = udf(lambda lat, lon: convert_latlon_to_utm(lat, lon), StringType())
     
     requests_with_utm_coordinates = requests_with_normalized_animal_abuse_complaint_type\
         .withColumn("utm", convert_latlon_to_utm_udf(col("latitude"), col("longitude")))
