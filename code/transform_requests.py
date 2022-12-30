@@ -1,7 +1,6 @@
 import logging
 import sys
 import time
-import utm
 
 from pyspark.sql import SparkSession
 
@@ -32,6 +31,8 @@ def transform_requests_df(requests):
             col("descriptor"),\
             col("location.latitude").alias("latitude").cast("double"),\
             col("location.longitude").alias("longitude").cast("double"),\
+            col("x_coordinate_state_plane"),\
+            col("y_coordinate_state_plane"),\
             col("resolution_description"),\
             col("cross_street_1"),\
             col("cross_street_2"),\
@@ -49,20 +50,7 @@ def transform_requests_df(requests):
         .drop("complaint_type")\
         .withColumnRenamed("complaint_type_new", "complaint_type")
 
-    def convert_latlon_to_utm(latitude, longitude):
-        utm_easting, utm_northing, utm_zone, utm_lat_zone = utm.from_latlon(latitude, longitude)
-        return f'{utm_easting},{utm_northing},{utm_zone}'
-    
-    convert_latlon_to_utm_udf = udf(convert_latlon_to_utm)
-    
-    requests_with_utm_coordinates = requests_with_normalized_animal_abuse_complaint_type\
-        .withColumn("utm", convert_latlon_to_utm_udf(col("latitude"), col("longitude")))
-    
-    requests_with_utm_fields_as_separate_columns = requests_with_utm_coordinates\
-        .withColumn("utm_easting", split(col("utm"), ',').getItem(0))\
-        .withColumn("utm_northing", split(col("utm"), ',').getItem(1))\
-        .withColumn("utm_zone", split(col("utm"), ',').getItem(2))
-    return requests_with_utm_fields_as_separate_columns
+    return requests_with_normalized_animal_abuse_complaint_type
 
 
 def create_dim_complaint_type_table(sparkSession, requests):

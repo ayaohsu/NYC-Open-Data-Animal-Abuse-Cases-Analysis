@@ -30,19 +30,14 @@ def extract_311_requests_to_s3():
 
     interested_complaint_types_comma_separated_str = ','.join(f'\'{item}\'' for item in INTERESTED_COMPLAINT_TYPES)
     query_to_311_requests = f"""
-        date_extract_y(created_date) >= 2015
+        date_extract_y(created_date) >= 2014
         and complaint_type in ({interested_complaint_types_comma_separated_str})
         and borough = 'BROOKLYN'
     """
 
-    # query_to_311_requests = """
-    #     date_extract_y(created_date) >= 2015
-    #     and borough = 'BROOKLYN'
-    # """
-
     responses_311 = requests.get(DATASET_URL, {
         "$$app_token": APP_TOKEN,
-        "$limit":  100000,
+        "$limit":  1000000,
         "$where": query_to_311_requests
     })
 
