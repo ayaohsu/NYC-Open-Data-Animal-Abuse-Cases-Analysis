@@ -9,3 +9,19 @@ Unger"s Butcher Shop, 205 Wilson Street (commercial) (40.707366194623816, -73.95
 
 linktr:
 https://linktr.ee/kindkaporos?fbclid=IwAR20EMgIf9_UkVy2I_jssMi94FN-Q-PZWj6A8laE-ZY2wUzvyoEcxpzUTxc
+
+Data driven clusters:
+1. 
+205 Wilson Street
+2. 
+285 lee Avenue
+467 flushing Ave
+18 middleton Street
+3. 
+2822 avenue J
+4. 
+824 Eastern parkway
+1414 president Street
+5. 
+867 Bedford avenue
+684 myrtle avenue
