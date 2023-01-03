@@ -60,8 +60,45 @@ def test_e2e(spark_session, mocker):
         .load()
 
     requests = reqeusts_df.collect()
-
+    
     assert len(requests) == 1
+    assert requests[0]['unique_key'] == "55577067"
 
-    print(requests[0]['created_date_key'])
-    print(requests[0]['descriptor'])
+    complaint_types_df = spark_session.read \
+        .format("io.github.spark_redshift_community.spark.redshift") \
+        .option("url", REDSHIFT_URL) \
+        .option("aws_iam_role", IAM_ROLE_ARN) \
+        .option("Tempdir", "s3://311-dataset/") \
+        .option("dbtable", "dim_complaint_type") \
+        .load()
+
+    complaint_types = complaint_types_df.collect()
+    
+    assert len(requests) == 1
+    assert complaint_types[0]['complaint_type_name'] == "Animal Abuse"
+
+    dates_df = spark_session.read \
+        .format("io.github.spark_redshift_community.spark.redshift") \
+        .option("url", REDSHIFT_URL) \
+        .option("aws_iam_role", IAM_ROLE_ARN) \
+        .option("Tempdir", "s3://311-dataset/") \
+        .option("dbtable", "dim_date") \
+        .load()
+
+    dates = dates_df.collect()
+    
+    assert len(requests) == 1
+    assert dates[0]['date_key'] == 20221001
+
+    location_types_df = spark_session.read \
+        .format("io.github.spark_redshift_community.spark.redshift") \
+        .option("url", REDSHIFT_URL) \
+        .option("aws_iam_role", IAM_ROLE_ARN) \
+        .option("Tempdir", "s3://311-dataset/") \
+        .option("dbtable", "dim_location_type") \
+        .load()
+
+    location_types = location_types_df.collect()
+    
+    assert len(location_types) == 1
+    assert location_types[0]['location_type_name'] == "Store/Commercial"
