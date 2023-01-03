@@ -1,20 +1,19 @@
 import logging
 import time
 
+
+REDSHIFT_URL = f"jdbc:redshift:iam://redshift-cluster-1.cqljvt3iaanm.us-east-1.redshift.amazonaws.com:5439/requests?user=testuser1"
+IAM_ROLE_ARN = "arn:aws:iam::607143918644:role/redshift-access-to-s3"
+
 def load_tables_into_redshift(sparkSession):
     start_time = time.time()
 
-    complaint_type_df = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")
-    
-    redshift_database_name = "requests"
-    redshift_user_name = "testuser1"
-    url = f"jdbc:redshift:iam://redshift-cluster-1.cqljvt3iaanm.us-east-1.redshift.amazonaws.com:5439/{redshift_database_name}?user={redshift_user_name}"
-    iam_role_arn = "arn:aws:iam::607143918644:role/redshift-access-to-s3"
+    complaint_type_df = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")    
 
     complaint_type_df.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
-        .option("url", url)\
-        .option("aws_iam_role", iam_role_arn) \
+        .option("url", REDSHIFT_URL)\
+        .option("aws_iam_role", IAM_ROLE_ARN) \
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "dim_complaint_type")\
         .mode("overwrite")\
@@ -24,8 +23,8 @@ def load_tables_into_redshift(sparkSession):
     
     date_df.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
-        .option("url", url)\
-        .option("aws_iam_role", iam_role_arn) \
+        .option("url", REDSHIFT_URL)\
+        .option("aws_iam_role", IAM_ROLE_ARN) \
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "dim_date")\
         .mode("overwrite")\
@@ -35,8 +34,8 @@ def load_tables_into_redshift(sparkSession):
     
     location_type_df.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
-        .option("url", url)\
-        .option("aws_iam_role", iam_role_arn) \
+        .option("url", REDSHIFT_URL)\
+        .option("aws_iam_role", IAM_ROLE_ARN) \
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "dim_location_type")\
         .mode("overwrite")\
@@ -68,8 +67,8 @@ def load_tables_into_redshift(sparkSession):
     
     fact_service_request.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
-        .option("url", url)\
-        .option("aws_iam_role", iam_role_arn) \
+        .option("url", REDSHIFT_URL)\
+        .option("aws_iam_role", IAM_ROLE_ARN) \
         .option("Tempdir", "s3://311-dataset/")\
         .option("dbtable", "fact_service_request")\
         .mode("overwrite")\
