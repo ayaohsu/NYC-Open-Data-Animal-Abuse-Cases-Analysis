@@ -9,6 +9,11 @@ from load_into_redshift import load_tables_into_redshift
 
 APP_NAME = "kaporos_311_requests_analysis"
 
+def run_etl_pipeline(sparkSession):
+    extract_311_requests_to_s3()
+    transform_311_requests(sparkSession)
+    load_tables_into_redshift(sparkSession)
+
 if __name__ == "__main__":
     
     root = logging.getLogger()
@@ -20,13 +25,10 @@ if __name__ == "__main__":
     handler.setFormatter(formatter)
     root.addHandler(handler)
     
-    extract_311_requests_to_s3()
+    spark = SparkSession.builder \
+        .appName(APP_NAME) \
+        .getOrCreate()
 
-    spark = SparkSession.builder.appName(APP_NAME).getOrCreate()
-    
-    spark.sparkContext.setLogLevel("WARN")
-
-    transform_311_requests(spark)
-    load_tables_into_redshift(spark)
+    run_etl_pipeline(spark)
 
     spark.stop()

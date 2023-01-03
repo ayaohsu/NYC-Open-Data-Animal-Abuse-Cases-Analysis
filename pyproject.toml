@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+pythonpath = "src"
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]
+spark_home = "/usr/lib/spark"
+spark_options = "spark.jars: /usr/share/aws/redshift/jdbc/RedshiftJDBC.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-redshift.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-avro.jar,/usr/share/aws/redshift/spark-redshift/lib/minimal-json.jar"

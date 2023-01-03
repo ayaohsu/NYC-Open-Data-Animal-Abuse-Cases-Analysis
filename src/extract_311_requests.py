@@ -37,7 +37,8 @@ def extract_311_requests_to_s3():
 
     responses_311 = requests.get(DATASET_URL, {
         "$$app_token": APP_TOKEN,
-        "$limit":  1000000,
+        #"$limit":  1000000,
+        "$limit":  1000,
         "$where": query_to_311_requests
     })
 

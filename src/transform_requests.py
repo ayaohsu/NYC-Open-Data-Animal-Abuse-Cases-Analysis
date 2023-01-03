@@ -119,8 +119,6 @@ def create_fact_service_request_table(sparkSession, requests):
         .select(requests_with_created_date_key["*"], dates["date_key"].alias("closed_date_key"))\
         .drop("closed_date")
 
-    requests_with_closed_date_key.show()
-    
     requests_with_closed_date_key.createOrReplaceTempView("fact_service_request")
 
 def transform_311_requests(sparkSession):
@@ -130,7 +128,6 @@ def transform_311_requests(sparkSession):
     requests_311 = sparkSession.read.json(s3_uri)
 
     request = transform_requests_df(requests_311)
-    request.show()
 
     create_dim_complaint_type_table(sparkSession, request)
     create_dim_date_table(sparkSession, request)
