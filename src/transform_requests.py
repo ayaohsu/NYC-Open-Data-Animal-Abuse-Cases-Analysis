@@ -5,7 +5,7 @@ import time
 from pyspark.sql import SparkSession
 
 from pyspark.sql.functions import col, row_number, lit, to_date, date_format,\
-     year, month, dayofyear, substring, when, split, udf
+     year, month, dayofyear, substring, when
 from pyspark.sql.window import Window
 from pyspark.sql.types import IntegerType
 

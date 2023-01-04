@@ -23,4 +23,6 @@ Draw a map with this year's data
 
 spark-submit \
   --jars /usr/share/aws/redshift/jdbc/RedshiftJDBC.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-redshift.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-avro.jar,/usr/share/aws/redshift/spark-redshift/lib/minimal-json.jar \
-  src/main.py
+  src/main.py \
+  1>output.log \
+  2>spark.log

@@ -1,5 +1,6 @@
 import logging
 import sys
+import os
 
 from pyspark.sql import SparkSession
 
@@ -7,12 +8,9 @@ from extract_311_requests import extract_311_requests_to_s3
 from transform_requests import transform_311_requests
 from load_into_redshift import load_tables_into_redshift
 
-APP_NAME = "kaporos_311_requests_analysis"
+from data_quality_checks import pass_data_quality_checks
 
-def run_etl_pipeline(sparkSession):
-    extract_311_requests_to_s3()
-    transform_311_requests(sparkSession)
-    load_tables_into_redshift(sparkSession)
+APP_NAME = "kaporos_311_requests_analysis"
 
 if __name__ == "__main__":
     
@@ -24,11 +22,19 @@ if __name__ == "__main__":
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     handler.setFormatter(formatter)
     root.addHandler(handler)
-    
+
+    extract_311_requests_to_s3()
+
     spark = SparkSession.builder \
         .appName(APP_NAME) \
         .getOrCreate()
 
-    run_etl_pipeline(spark)
+    transform_311_requests(spark)
+    
+    if not pass_data_quality_checks(spark):
+        spark.stop()
+        raise Exception('Failed data quality checks. Exiting without loading into Redshift.')
+
+    load_tables_into_redshift(spark)
 
     spark.stop()

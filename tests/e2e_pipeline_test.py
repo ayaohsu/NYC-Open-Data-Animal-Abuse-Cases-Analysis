@@ -1,8 +1,9 @@
 import pytest
 from pyspark.sql import SparkSession
 
-from main import run_etl_pipeline
-from load_into_redshift import REDSHIFT_URL, IAM_ROLE_ARN
+from extract_311_requests import extract_311_requests_to_s3
+from transform_requests import transform_311_requests
+from load_into_redshift import load_tables_into_redshift, REDSHIFT_URL, IAM_ROLE_ARN
 
 class MockedResponse:
     def __init__(self):
@@ -48,8 +49,10 @@ class MockedResponse:
 def test_e2e(spark_session, mocker):
     mocker.patch('extract_311_requests.requests.get',
         return_value= MockedResponse())
-    
-    run_etl_pipeline(spark_session)
+
+    extract_311_requests_to_s3()
+    transform_311_requests(spark_session)
+    load_tables_into_redshift(spark_session)
 
     reqeusts_df = spark_session.read \
         .format("io.github.spark_redshift_community.spark.redshift") \

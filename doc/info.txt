@@ -36,5 +36,10 @@ Mock request.get and run the whole data pipeline. Examine the result from redshi
   - test date range
   - test complaint types
   - unique key should be unique
-  - complaint type / descriptor
-  - lat/long should be within brooklyn
+
+
+Stats:
+
+2023-01-04 07:22:52,829 - root - INFO - Finished extracting and uploading requests from 311. [requests_count=539799][elapsed_time=58.19924855232239]
+2023-01-04 07:23:37,201 - root - INFO - Finished transforming data. [elapsed_time=29.047999143600464]
+2023-01-04 07:27:26,705 - root - INFO - Finished loading data. [elapsed_time=150.39147329330444]
