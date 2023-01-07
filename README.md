@@ -1,4 +1,4 @@
-# Analyze NYC 311 Requests Regarding the Yearly Jewish Kaporos Ritual
+# NYC 311 Requests Analysis for the Jewish Kaporos Ritual
 
 - [Introduction](#introduction)
 - [Architecture](#architecture)
@@ -9,16 +9,19 @@
 
 ## Introduction
 
-This is my personal project to get some insights of the complaints during the Jewish ritual of kaporos in NYC and also to familiarize myself with the usage of data engineering tools.
+[Kaporo (ro Kapparot)](https://en.wikipedia.org/wiki/Kapparot) is a traditional practice by some orthodox Jewish people to use chickens as a symbol of atonement, or to transfer one's sins to. The chickens are slaughtered after the ritual in the streets. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year [[source](https://www.adoptakaporossurvivor.com/whatiskaporos)]. This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all on the slaughter sites, on public streets. For more information about kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
 
-[Kaporo (ro Kapparot)](https://en.wikipedia.org/wiki/Kapparot) is a traditional practice by some orthodox Jewish people to use chickens as a symbol of atonement. The chickens are slaughtered after the ritual in the streets. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year [source](https://www.adoptakaporossurvivor.com/whatiskaporos). This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all on the slaughter sites, in the public streets. For more information about kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
+In this project, I digged into 311 service requests from [NYC Open Data](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9) and tried to understand more about the kaporos-related complaints and discover the major sites where the ritual happens. To do that, I built a data pipeline in AWS ecosystem and put up a QuickSight dashboard to visualize the results.
 
+If you would like to get the access to the dashboard, or if you have any questions or comments, please feel free to reach me at ayao780607@gmail.com!
 
+Dashboard link:
+https://us-east-1.quicksight.aws.amazon.com/sn/accounts/607143918644/dashboards/ce780170-26a3-4382-8461-1db5d34ae445
 
-If you have any questions or comments, please feel free to reach me at ayao780607@gmail.com!
 
 ## Architecture
 
+![NYC Open Data -> S3 -> EMR & Spark -> Redshift -> QuickSight](figures/311-analysis-architecture.drawio.png)
 
 ## Data Model
 
@@ -33,3 +36,5 @@ spark-submit \
   src/main.py \
   1>output.log \
   2>spark.log
+
+## Some Hope

@@ -5,3 +5,4 @@ questions.txt
 staged_data_schema.txt
 *.jar
 __pycache__
+info

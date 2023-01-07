@@ -1,9 +1,0 @@
-Error (code 1204) while loading data into Redshift: "String length exceeds DDL length"
-Table name: "PUBLIC"."fact_service_request"
-Column name: resolution_description
-Column type: varchar(256)
-Raw line: 43144108|20190628|20190723|2|11229|6|No Shelter|{"address": "", "city": "", "state": "", "zip": ""}|40.59670792799608|-73.95090929569977|Your complaint has been forwarded to the New York Police Department for a non-emergency response. Your complaint will take priority over other non-emergency complaints. 311 will have additional information in 8 hours. Please note your service request number for future reference.|AVENUE V|GRAVESEND NECK ROAD|AVENUE V|GRAVESEND NECK ROAD|                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-Raw field value: Your complaint has been forwarded to the New York Police Department for a non-emergency response. Your complaint will take priority over other non-emergency complaints. 311 will have additional information in 8 hours. Please note your service request number for future reference.                                                                                                                                                                                                                                                   
-
-According to documentaion, it is possible to configure the size of string column. However, it looks like it is not supported in Python. Do you know if there is other possible ways?
-https://github.com/spark-redshift-community/spark-redshift#configuring-the-maximum-size-of-string-columns
