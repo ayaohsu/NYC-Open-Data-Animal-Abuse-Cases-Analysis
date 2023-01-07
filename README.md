@@ -1,25 +1,32 @@
-Goals
-- To familiarize the usage of data engineering tools
-- To get insights of complaints from NYC kaporos and locations
+# Analyze NYC 311 Requests Regarding the Yearly Jewish Kaporos Ritual
 
-Different complaints type categories in Kaporo period vs avg of the year
-- animal abuse
-- dead animals
-- animal odor
-- in kaporo region by coordiante
+- [Introduction](#introduction)
+- [Architecture](#architecture)
+- [Data Model](#data-model)
+- [Testing](#testing)
+- [Dashboard](#dashboard)
+- [Usage](#usage)
 
-Pie chart of complaint types
+## Introduction
 
-Resolution rate by complaint type
+This is my personal project to get some insights of the complaints during the Jewish ritual of kaporos in NYC and also to familiarize myself with the usage of data engineering tools.
 
-Draw a map with this year's data
+[Kaporo (ro Kapparot)](https://en.wikipedia.org/wiki/Kapparot) is a traditional practice by some orthodox Jewish people to use chickens as a symbol of atonement. The chickens are slaughtered after the ritual in the streets. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year [source](https://www.adoptakaporossurvivor.com/whatiskaporos). This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all on the slaughter sites, in the public streets. For more information about kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
 
 
-1. Soda API -> s3
-2. s3 -> oracle db with spark
-3. Run queries on Oracle DB and export to excel 
 
-# Usage
+If you have any questions or comments, please feel free to reach me at ayao780607@gmail.com!
+
+## Architecture
+
+
+## Data Model
+
+## Testing
+
+## Dashboard
+
+## Usage
 
 spark-submit \
   --jars /usr/share/aws/redshift/jdbc/RedshiftJDBC.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-redshift.jar,/usr/share/aws/redshift/spark-redshift/lib/spark-avro.jar,/usr/share/aws/redshift/spark-redshift/lib/minimal-json.jar \
