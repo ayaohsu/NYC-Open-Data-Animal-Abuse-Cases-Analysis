@@ -5,6 +5,7 @@
 - [Data Model](#data-model)
 - [Testing](#testing)
 - [Outcome](#outcome)
+- [Meet the Kaporos Survivors!](#meet-the-kaporos-survivors)
 
 ## Introduction
 
@@ -59,7 +60,7 @@ Also at the sites above, there are totally 396 possibly related complaints, incl
 
 For those complaints above, only few compliant types have been updated with actions by the Police Department, while other complaint type like animal facility without permit, animal odor, animal waste, do not have any requests with actions by the Police Department.
 
-## Meet the kaporos survivors!
+## Meet the Kaporos Survivors!
 
 ![kaporos survivors photo](figures/kaporos-survivors.jpg)
 
