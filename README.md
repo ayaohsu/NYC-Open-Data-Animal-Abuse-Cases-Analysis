@@ -4,7 +4,7 @@
 - [Architecture](#architecture)
 - [Data Model](#data-model)
 - [Testing](#testing)
-- [Results](#results)
+- [Outcome](#outcome)
 
 ## Introduction
 
@@ -21,7 +21,10 @@ Click [here](https://us-east-1.quicksight.aws.amazon.com/sn/accounts/60714391864
 
 ![NYC Open Data -> S3 -> EMR & Spark -> Redshift -> QuickSight](figures/311-analysis-architecture.png)
 
-- TODO why do we choose this stack
+The major reason to choose Spark over MapReduce here is that Spark uses RAM to cache and process data whereas MapReduce processes data on disk. As a result, Spark is up to 100 times faster than MapReduce.
+
+Amazon Redshift is utilized since it is optimized for analytics and large datasets, compared to OLTP systems. Although we do not have a very large dataset here (~500K requests) so it is a bit overkill, it is neverthless a good practice to use an OLAP system as the data warehouse.
+
 
 ## Data Model
 
@@ -32,10 +35,24 @@ I chose a star schema to model various aspects of the requests. The date dimensi
 
 ![data model diagram](figures/311-analysis-architecture-data-model.png)
 
+
 ## Testing
 
 **End-to-end system testing** is in place to ensure the pipeline does not break when adding new features. This is done by mocking the sample data when reading from NYC Open Data API, running the pipeline, and verify in the data warehouse to see if the output is expected. The test can be carried out by running `pytest` manually.
 
 I also wrote some **data quality testing** to make sure the transformed data meets the business constraints and rules, for example, if the request dates of all the requests meet our query to the data source.
 
-## Results
+
+## Outcome
+
+Here are some screenshots of the dashboard:
+
+![dashboard of kaporos sites](figures/dashboard-1.jpg)
+
+![dashboard of counts by complaint types](figures/dashboard-2.JPG)
+
+![dashboard of request resolution rates](figures/dashboard-3.jpg)
+
+## Meet the kaporos survivors!
+
+![kaporos survivors photo](figures/kaporos-survivors.jpg)
