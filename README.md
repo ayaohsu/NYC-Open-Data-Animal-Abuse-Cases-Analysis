@@ -9,7 +9,7 @@
 
 ## Introduction
 
-[Kaporos](https://en.wikipedia.org/wiki/Kapparot) is a religious tradition practice by some orthodox Jews in early fall focusing on cleansing one's sins. Some communities use chickens as a symbol of atonement and slauther them after the ritual, usually on the site in the public. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year. This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all on the public streets. For more information about kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
+[Kaporos](https://en.wikipedia.org/wiki/Kapparot) is a religious tradition practice by some orthodox Jews in early fall focusing on cleansing one's sins. Some communities use chickens as a symbol of atonement and slauther them after the ritual, usually in the public. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year. This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all on the public streets. For more information about kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
 
 In this project, I digged into 311 service requests from [NYC Open Data](https://data.cityofnewyork.us/Social-Services/311-Service-Requests-from-2010-to-Present/erm2-nwe9) and tried to understand more about the kaporos-related complaints and discover the major sites where the ritual happens. To do that, I built a data pipeline in AWS ecosystem and put up a QuickSight dashboard to visualize the results.
 
