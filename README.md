@@ -41,7 +41,7 @@ I chose a star schema to model various aspects of the requests. The date dimensi
 
 **End-to-end system testing** is in place to ensure the pipeline does not break when adding new features. This is done by mocking the sample data when reading from NYC Open Data API, running the pipeline, and verify in the data warehouse to see if the output is expected. The test can be carried out by running `pytest` manually.
 
-I also wrote some **data quality testing** to make sure the transformed data meets the business constraints and rules, for example, if the request dates of all the requests meet our query to the data source.
+I also wrote some **data quality testing** to make sure the transformed data meets the business constraints and rules, for example, if the request dates of all the requests meet our query to the data source. This is run everytime when the pipeline is invoked. If the test fails, the pipeline will exit and nothing will be loaded into the data warehouse.
 
 
 ## Outcome
@@ -59,6 +59,7 @@ From the above, there are at least five clusters with large number of complaints
 Also at the sites above, there are totally 396 possibly related complaints, including animal torture (194), unsanity animal private property (47), animal facility without permit (42), and many more.  
 
 For those complaints above, only few compliant types have been updated with actions by the Police Department, while other complaint type like animal facility without permit, animal odor, animal waste, do not have any requests with actions by the Police Department.
+
 
 ## Meet the Kaporos Survivors!
 

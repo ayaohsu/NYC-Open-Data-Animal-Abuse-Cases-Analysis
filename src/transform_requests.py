@@ -81,7 +81,7 @@ def create_dim_date_table(sparkSession, requests):
 
 def create_location_type_table(sparkSession, requests):
     location_types = requests.select(col("location_type").alias("location_type_name"))\
-        .distinct().orderBy("location_type")
+        .filter("location_type_name is not null").distinct().orderBy("location_type")
 
     location_types_with_partition = location_types.withColumn("partition", lit("ALL"))
     one_partition = Window.partitionBy("partition").orderBy("partition")
@@ -104,7 +104,7 @@ def create_fact_service_request_table(sparkSession, requests):
     location_types = sparkSession.sql("SELECT location_type_key, location_type_name FROM dim_location_type")
     
     requests_with_location_type_keys = requests_with_complaint_type_keys\
-        .join(location_types, requests_with_complaint_type_keys["location_type"] == location_types["location_type_name"])\
+        .join(location_types, requests_with_complaint_type_keys["location_type"] == location_types["location_type_name"], "left")\
         .select(requests_with_complaint_type_keys["*"], location_types["location_type_key"])\
         .drop("location_type")
 
