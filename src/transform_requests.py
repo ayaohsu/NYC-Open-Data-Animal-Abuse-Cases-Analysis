@@ -64,6 +64,9 @@ def create_dim_complaint_type_table(sparkSession, requests):
         .withColumn("complaint_type_key", row_number().over(one_partition))\
         .drop("partition")
     
+    logging.info('complaint types dim table when created')
+    complaint_types_with_row_numbers.show()
+
     complaint_types_with_row_numbers.createOrReplaceTempView("dim_complaint_type")
 
 def create_dim_date_table(sparkSession, requests):
@@ -98,8 +101,11 @@ def create_fact_service_request_table(sparkSession, requests):
     
     requests_with_complaint_type_keys = requests\
         .join(complaint_types, requests["complaint_type"] == complaint_types["complaint_type_name"])\
-        .select(requests["*"], complaint_types["complaint_type_key"])\
-        .drop("complaint_type")
+        .select(requests["*"], complaint_types["complaint_type_key"])
+        #.drop("complaint_type")
+    
+    logging.info('fact table after joined with complaint type')
+    requests_with_complaint_type_keys.show()
 
     location_types = sparkSession.sql("SELECT location_type_key, location_type_name FROM dim_location_type")
     

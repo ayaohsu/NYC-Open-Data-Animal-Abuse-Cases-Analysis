@@ -9,6 +9,8 @@ def load_tables_into_redshift(sparkSession):
     start_time = time.time()
 
     complaint_type_df = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")    
+    logging.info('dim table before loading')
+    complaint_type_df.show()
 
     complaint_type_df.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
@@ -18,6 +20,17 @@ def load_tables_into_redshift(sparkSession):
         .option("dbtable", "dim_complaint_type")\
         .mode("overwrite")\
         .save()
+
+    logging.info('read dim table immediately after loading')
+    complaint_type_df_new = sparkSession.read \
+        .format("io.github.spark_redshift_community.spark.redshift") \
+        .option("url", REDSHIFT_URL) \
+        .option("aws_iam_role", IAM_ROLE_ARN) \
+        .option("Tempdir", "s3://311-dataset/") \
+        .option("dbtable", "dim_complaint_type") \
+        .load()
+    
+    complaint_type_df_new.show()
 
     date_df = sparkSession.sql("SELECT date_key, year, month, dayofyear FROM dim_date")
     
@@ -65,6 +78,9 @@ def load_tables_into_redshift(sparkSession):
         fact_service_request
     """)
     
+    logging.info('fact table before loading')
+    fact_service_request.show()
+
     fact_service_request.write\
         .format("io.github.spark_redshift_community.spark.redshift") \
         .option("url", REDSHIFT_URL)\
