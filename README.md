@@ -26,9 +26,9 @@ Click [here](https://us-east-1.quicksight.aws.amazon.com/sn/accounts/60714391864
 
 ![NYC Open Data -> S3 -> EMR & Spark -> Redshift -> QuickSight](figures/311-analysis-architecture.png)
 
-The major reason to favor __Spark__ over MapReduce here is that Spark uses RAM to cache and process data whereas MapReduce processes data on disk. As a result, Spark is up to 100 times faster than MapReduce.
+The major reason to favor __Spark__ over MapReduce here is that MapReduce writes the intermediate results into disk whereas Spark does that in memory. As a result, Spark is up to 100 times faster than MapReduce.
 
-__Amazon Redshift__ is utilized since it is optimized for analytics and large datasets, compared to OLTP systems. Although we do not have a very large dataset here (~500K requests) so it is a bit overkill, it is neverthless a good practice to use an OLAP system as the data warehouse.
+__Amazon Redshift__ is utilized since it is optimized for analytics and large datasets, compared to OLTP systems (though we process only about 500K requests here, not really a big dataset).
 
 
 ## Data Model
