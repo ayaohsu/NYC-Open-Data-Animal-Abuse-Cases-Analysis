@@ -23,14 +23,14 @@ def pass_data_quality_checks(sparkSession):
         logging.error(f"Transformed data has earlier dates than the specified date range. [minimal_date={min_date['date_key']}]")
         return False
 
-    rows_of_complaint_types_table = sparkSession.sql('''
-        SELECT complaint_type_name
-        FROM dim_complaint_type
+    distinct_complaint_types = sparkSession.sql('''
+        SELECT DISTINCT complaint_type
+        FROM fact_service_request
     ''').collect()
 
-    for row in rows_of_complaint_types_table:
-        if row['complaint_type_name'] not in VALID_COMPLAINT_TYPES:
-            logging.error(f"Found invalid complaint type in transformed data. [complaint_type={row['complaint_type_name']}]")
+    for complaint_type in distinct_complaint_types:
+        if complaint_type['complaint_type'] not in VALID_COMPLAINT_TYPES:
+            logging.error(f"Found invalid complaint type in transformed data. [complaint_type={complaint_type['complaint_type']}]")
             return False
     
     duplicate_unique_keys = sparkSession.sql('''

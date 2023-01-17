@@ -4,8 +4,9 @@ import time
 
 from pyspark.sql import SparkSession
 
-from pyspark.sql.functions import col, row_number, lit, to_date, date_format,\
-     year, month, dayofyear, substring, when
+from pyspark.sql.functions import col, lit, to_date, date_format,\
+     year, month, dayofyear, substring, \
+    when, first, concat
 from pyspark.sql.window import Window
 from pyspark.sql.types import IntegerType
 
@@ -31,13 +32,9 @@ def transform_requests_df(requests):
             col("descriptor"),\
             col("location.latitude").alias("latitude").cast("double"),\
             col("location.longitude").alias("longitude").cast("double"),\
-            col("x_coordinate_state_plane"),\
-            col("y_coordinate_state_plane"),\
             col("resolution_description"),\
             col("cross_street_1"),\
-            col("cross_street_2"),\
-            col("intersection_street_1"),\
-            col("intersection_street_2")\
+            col("cross_street_2")
         )
     
     requests_with_separate_resolution_description_columns = requests_with_desired_fields\
@@ -53,20 +50,7 @@ def transform_requests_df(requests):
     return requests_with_normalized_animal_abuse_complaint_type
 
 
-def create_dim_complaint_type_table(sparkSession, requests):
-    complaint_types = requests.select(col("complaint_type").alias("complaint_type_name"))\
-        .distinct().orderBy("complaint_type")
-
-    complaint_types_with_partition = complaint_types.withColumn("partition", lit("ALL"))
-    one_partition = Window.partitionBy("partition").orderBy("partition")
-
-    complaint_types_with_row_numbers = complaint_types_with_partition\
-        .withColumn("complaint_type_key", row_number().over(one_partition))\
-        .drop("partition")
-    
-    complaint_types_with_row_numbers.createOrReplaceTempView("dim_complaint_type")
-
-def create_dim_date_table(sparkSession, requests):
+def create_dim_date_table(requests):
     created_dates = requests.select(to_date("created_date").alias("date")).filter("date is not null").distinct()
     closed_dates = requests.select(to_date("closed_date").alias("date")).filter("date is not null").distinct()
     all_dates = created_dates.union(closed_dates).distinct()
@@ -79,39 +63,32 @@ def create_dim_date_table(sparkSession, requests):
 
     dates_with_year_month_day.createOrReplaceTempView("dim_date")
 
-def create_location_type_table(sparkSession, requests):
-    location_types = requests.select(col("location_type").alias("location_type_name"))\
-        .filter("location_type_name is not null").distinct().orderBy("location_type")
-
-    location_types_with_partition = location_types.withColumn("partition", lit("ALL"))
-    one_partition = Window.partitionBy("partition").orderBy("partition")
-
-    location_types_with_row_numbers = location_types_with_partition\
-        .withColumn("location_type_key", row_number().over(one_partition))\
-        .drop("partition")
+def create_dim_location_table(requests):
+    location_info_by_address = requests.filter("incident_address is not null") \
+        .groupBy("incident_address") \
+        .select(
+            col("incident_address"), \
+            first("incident_zip"), \
+            first("location_type"), \
+            first("latitude"), \
+            first("longitude"), \
+            first("cross_street_1"), \
+            first("cross_street_2")
+        )
     
-    location_types_with_row_numbers.createOrReplaceTempView("dim_location_type")
+    location_info_by_address.show()
+
+    location_info_with_location_key = location_info_by_address \
+        .withColumn("location_key", concat(concat(col("incident_address"), lit(", ")), col("incident_zip")))
+
+    location_info_with_location_key.createOrReplaceTempView("dim_location")
 
 def create_fact_service_request_table(sparkSession, requests):
-    
-    complaint_types = sparkSession.sql("SELECT complaint_type_key, complaint_type_name FROM dim_complaint_type")
-    
-    requests_with_complaint_type_keys = requests\
-        .join(complaint_types, requests["complaint_type"] == complaint_types["complaint_type_name"])\
-        .select(requests["*"], complaint_types["complaint_type_key"])\
-        .drop("complaint_type")
-
-    location_types = sparkSession.sql("SELECT location_type_key, location_type_name FROM dim_location_type")
-    
-    requests_with_location_type_keys = requests_with_complaint_type_keys\
-        .join(location_types, requests_with_complaint_type_keys["location_type"] == location_types["location_type_name"], "left")\
-        .select(requests_with_complaint_type_keys["*"], location_types["location_type_key"])\
-        .drop("location_type")
 
     dates = sparkSession.sql("SELECT date_key, date FROM dim_date")
-    requests_with_created_date_key = requests_with_location_type_keys\
-        .join(dates, requests_with_location_type_keys["created_date"] == dates["date"])\
-        .select(requests_with_location_type_keys["*"], dates["date_key"].alias("created_date_key"))\
+    requests_with_created_date_key = requests\
+        .join(dates, requests["created_date"] == dates["date"])\
+        .select(requests["*"], dates["date_key"].alias("created_date_key"))\
         .drop("created_date")
     
     requests_with_closed_date_key = requests_with_created_date_key\
@@ -119,7 +96,27 @@ def create_fact_service_request_table(sparkSession, requests):
         .select(requests_with_created_date_key["*"], dates["date_key"].alias("closed_date_key"))\
         .drop("closed_date")
 
-    requests_with_closed_date_key.createOrReplaceTempView("fact_service_request")
+    locations = sparkSession.sql("""
+        SELECT 
+            location_key, 
+            incident_address, 
+            incident_zip, 
+            location_type, 
+            latitude, 
+            longitude,
+            cross_street_1,
+            cross_street_2 
+        FROM dim_location
+    """)
+
+    requests_with_location_key = requests_with_closed_date_key \
+        .join(locations, requests_with_closed_date_key["incident_address"] == locations["incident_address"] and requests_with_closed_date_key["incident_zip"] == locations["incident_zip"]) \
+        .select(requests_with_closed_date_key["*"], locations["location_key"]) \
+        .drop("incident_address", "incident_zip", "location_type", "latitude", "longitude", "cross_street_1", "cross_street_2")
+    
+    requests_with_location_key.show()
+
+    requests_with_location_key.createOrReplaceTempView("fact_service_request")
 
 def transform_311_requests(sparkSession):
     start_time = time.time()
@@ -129,9 +126,8 @@ def transform_311_requests(sparkSession):
 
     request = transform_requests_df(requests_311)
 
-    create_dim_complaint_type_table(sparkSession, request)
-    create_dim_date_table(sparkSession, request)
-    create_location_type_table(sparkSession, request)
+    create_dim_date_table(request)
+    create_dim_location_table(request)
     create_fact_service_request_table(sparkSession, request)
 
     end_time = time.time()

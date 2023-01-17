@@ -33,7 +33,7 @@ __Amazon Redshift__ is utilized since it is optimized for analytics and large da
 
 ## Data Model
 
-![data model diagram](figures/311-analysis-architecture-data-model.png)
+![data model diagram](figures/311-analysis-architecture-data-model.jpg)
 
 Dimension Tables: `dim_complaint_type`, `dim_date`, `dim_location_type`  
 Fact Table: `fact_service_request`  
