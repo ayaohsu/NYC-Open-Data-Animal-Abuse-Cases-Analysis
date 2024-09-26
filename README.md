@@ -1,4 +1,4 @@
-# NYC 311 Requests Analysis for Kaporos
+# NYC Open Data Animal Abuse Cases Analysis
 
 - [Introduction](#introduction)
 - [Architecture](#architecture)
@@ -10,8 +10,6 @@
 ## Introduction
 
 [Kaporos](https://en.wikipedia.org/wiki/Kapparot) is a religious tradition practiced by some orthodox Jews in early fall focusing on cleansing one's sins. In some communities, people use chickens as atonement - they would swing chickens over the head and slauther them afterwards. In Brooklyn, chickens are left in plastic crates outside, denied food and water for up to a week before slaugher. It is estimated that at least 60,000 chickens are slaughtered only in Brooklyn every year. This is not only a cruelty to animals, but also a potential cause of public health crisis as the dead birds, blood, body parts are all over the public streets. For more information about using chickens as Kaporos, please read this [post](https://www.adoptakaporossurvivor.com/whatiskaporos).
-
-![Ritual of Kaporos](figures/kaporos-images.jpg)
 
 *Reuters/Stephanie Keith*
 
